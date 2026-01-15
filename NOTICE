@@ -1,0 +1,12 @@
+Copyright 2022-2025 Tashi Network PTE. LTD.
+
+This project, Tashi Vertex for C, is licensed under the Apache
+License, Version 2.0.
+
+***
+
+This project dynamically links to the proprietary binary Tashi Vertex
+built by Tashi Network (https://tashi.network). The use of Tashi Vertex
+requires compliance with its separate commercial license.
+
+***
