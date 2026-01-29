@@ -69,8 +69,7 @@ impl Peers {
     pub fn with_capacity(capacity: usize) -> crate::Result<Self> {
         let mut handle = MaybeUninit::<Pointer<TVPeers>>::uninit();
 
-        let res = unsafe { tv_peers_new(capacity, handle.as_mut_ptr()) };
-        res.ok(())?;
+        unsafe { tv_peers_new(capacity, handle.as_mut_ptr()) }.ok()?;
 
         let handle = unsafe { handle.assume_init() };
 
@@ -95,7 +94,7 @@ impl Peers {
             tv_peers_insert(self.handle.as_ptr(), address.as_ptr(), public, capabilities)
         };
 
-        res.ok(())
+        res.ok()
     }
 }
 

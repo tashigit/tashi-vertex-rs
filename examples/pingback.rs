@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::anyhow;
 use clap::Parser;
-use tashi_vertex::{Context, KeyPublic, KeySecret, Peers, Socket};
+use tashi_vertex::{Context, KeyPublic, KeySecret, Options, Peers, Socket};
 
 #[derive(Debug, Clone)]
 struct PeerArg {
@@ -65,6 +65,11 @@ async fn main() -> anyhow::Result<()> {
     let socket = Socket::bind(&context, &args.bind).await?;
 
     println!(" :: Bound local socket");
+
+    // configure execution options for the Tashi Vertex (TV) engine
+    let mut options = Options::default();
+    options.set_report_gossip_events(true);
+    options.set_fallen_behind_kick_s(10);
 
     Ok(())
 }

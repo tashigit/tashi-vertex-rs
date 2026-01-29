@@ -22,8 +22,7 @@ impl KeyPublic {
         let mut key = MaybeUninit::<Self>::uninit();
 
         // Parse the DER-encoded key
-        let res = unsafe { tv_key_public_from_der(der.as_ptr(), der.len(), key.as_mut_ptr()) };
-        res.ok(()).unwrap();
+        unsafe { tv_key_public_from_der(der.as_ptr(), der.len(), key.as_mut_ptr()) }.ok()?;
 
         // SAFE: tv_key_public_from_der returns ok only if the structure is initialized
         Ok(unsafe { key.assume_init() })
@@ -36,7 +35,7 @@ impl KeyPublic {
             tv_key_public_to_der(self, output.as_mut_ptr(), output.len())
         };
 
-        res.ok(())
+        res.ok()
     }
 
     /// Formats the public key to DER format.

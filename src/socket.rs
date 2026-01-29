@@ -52,7 +52,7 @@ impl Future for SocketBind<'_> {
         ) {
             let user_data = unsafe { &mut *(user_data as *mut SocketBind) };
 
-            user_data.result = Some(result.ok(socket).map(|handle| Socket { handle }));
+            user_data.result = Some(result.ok_with(socket).map(|handle| Socket { handle }));
 
             if let Some(waker) = user_data.waker.take() {
                 waker.wake();
@@ -75,7 +75,7 @@ impl Future for SocketBind<'_> {
                 )
             };
 
-            if let Err(error) = res.ok(()) {
+            if let Err(error) = res.ok() {
                 return task::Poll::Ready(Err(error));
             }
         } else if let Some(result) = self.result.take() {

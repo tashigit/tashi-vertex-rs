@@ -19,8 +19,7 @@ impl Context {
     pub fn new() -> crate::Result<Self> {
         let mut handle = MaybeUninit::<Pointer<TVContext>>::uninit();
 
-        let res = unsafe { tv_context_new(handle.as_mut_ptr()) };
-        res.ok(())?;
+        unsafe { tv_context_new(handle.as_mut_ptr()) }.ok()?;
 
         let handle = unsafe { handle.assume_init() };
 

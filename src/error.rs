@@ -19,7 +19,13 @@ pub(crate) enum TVResult {
 
 impl TVResult {
     /// Converts the C TVResult into a Result type used in Rust.
-    pub(crate) fn ok<T>(self, success: T) -> Result<T> {
+    #[inline(always)]
+    pub(crate) fn ok(self) -> Result<()> {
+        self.ok_with(())
+    }
+
+    /// Converts the C TVResult into a Result type used in Rust.
+    pub(crate) fn ok_with<T>(self, success: T) -> Result<T> {
         match self {
             Self::Ok => Ok(success),
             Self::Argument => Err(Error::Argument),
@@ -30,6 +36,12 @@ impl TVResult {
             Self::Base58Decode => Err(Error::Base58Decode),
             Self::SocketBind => Err(Error::SocketBind),
         }
+    }
+
+    /// Asserts that the result is OK, panicking otherwise.
+    #[inline(always)]
+    pub(crate) fn assert_ok(self) {
+        self.ok().unwrap();
     }
 }
 

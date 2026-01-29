@@ -38,7 +38,7 @@ impl KeySecret {
         let res = unsafe { tv_key_secret_to_public(self, public.as_mut_ptr()) };
 
         // PANIC: can only return not ok if the pointer to secret is null
-        res.ok(()).unwrap();
+        res.assert_ok();
 
         // SAFE: tv_key_secret_to_public returns ok only if the structure is initialized
         unsafe { public.assume_init() }
@@ -49,8 +49,7 @@ impl KeySecret {
         let mut key = MaybeUninit::<Self>::uninit();
 
         // Parse the DER-encoded key
-        let res = unsafe { tv_key_secret_from_der(der.as_ptr(), der.len(), key.as_mut_ptr()) };
-        res.ok(())?;
+        unsafe { tv_key_secret_from_der(der.as_ptr(), der.len(), key.as_mut_ptr()) }.ok()?;
 
         // SAFE: tv_key_secret_from_der returns ok only if the structure is initialized
         Ok(unsafe { key.assume_init() })
@@ -63,7 +62,7 @@ impl KeySecret {
             tv_key_secret_to_der(self, output.as_mut_ptr(), output.len())
         };
 
-        res.ok(())
+        res.ok()
     }
 
     /// Formats the secret key to DER format.

@@ -22,7 +22,7 @@ pub fn encode(input: &[u8], output: &mut [u8]) -> crate::Result<()> {
         )
     };
 
-    res.ok(())
+    res.ok()
 }
 
 /// Encodes a byte array into a Base58 string.
@@ -75,7 +75,7 @@ pub fn decode(input: &[u8], output: &mut [u8]) -> crate::Result<()> {
         )
     };
 
-    res.ok(())
+    res.ok()
 }
 
 /// Decodes a Base58 string into a byte array.
