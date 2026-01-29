@@ -56,7 +56,7 @@ impl PeerCapabilities {
 /// Represents a unique set of peers in the network,
 /// each identified by their network address and public key.
 pub struct Peers {
-    handle: Pointer<TVPeers>,
+    pub(crate) handle: Pointer<TVPeers>,
 }
 
 impl Peers {
@@ -98,7 +98,7 @@ impl Peers {
     }
 }
 
-type TVPeers = c_void;
+pub(crate) type TVPeers = c_void;
 
 unsafe extern "C" {
     fn tv_peers_new(capacity: usize, peers: *mut Pointer<TVPeers>) -> TVResult;

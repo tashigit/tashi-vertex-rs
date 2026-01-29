@@ -11,7 +11,7 @@ use crate::ptr::Pointer;
 /// Handle to a Tashi Vertex socket.
 pub struct Socket {
     #[allow(unused)]
-    handle: Pointer<TVSocket>,
+    pub(crate) handle: Pointer<TVSocket>,
 }
 
 impl Socket {

@@ -5,7 +5,7 @@ use crate::ptr::Pointer;
 
 /// Container of options for Tashi Vertex.
 pub struct Options {
-    handle: Pointer<TVOptions>,
+    pub(crate) handle: Pointer<TVOptions>,
 }
 
 impl Default for Options {

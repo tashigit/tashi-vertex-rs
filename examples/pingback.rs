@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::anyhow;
 use clap::Parser;
-use tashi_vertex::{Context, KeyPublic, KeySecret, Options, Peers, Socket};
+use tashi_vertex::{Context, Engine, KeyPublic, KeySecret, Options, Peers, Socket};
 
 #[derive(Debug, Clone)]
 struct PeerArg {
@@ -70,6 +70,12 @@ async fn main() -> anyhow::Result<()> {
     let mut options = Options::default();
     options.set_report_gossip_events(true);
     options.set_fallen_behind_kick_s(10);
+
+    // start the engine
+    // and begin participating in the network
+    let engine = Engine::start(&context, socket, options, &key, peers)?;
+
+    println!(" :: Started the consensus engine");
 
     Ok(())
 }
