@@ -12,7 +12,7 @@ fn main() -> anyhow::Result<()> {
     println!("cargo:rustc-link-search=native={}", vertex.display());
 
     // Declare a dynamic link dependency on the tashi_vertex library
-    println!("cargo:rustc-link-lib=dylib=tashi_vertex");
+    println!("cargo:rustc-link-lib=dylib=tashi-vertex");
 
     // Copy libraries to the target output directory
     let profile = env::var("PROFILE")?;
