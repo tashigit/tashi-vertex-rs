@@ -18,6 +18,9 @@ impl<T> Pointer<T> {
     }
 }
 
+unsafe impl<T> Send for Pointer<T> {}
+unsafe impl<T> Sync for Pointer<T> {}
+
 /// Free memory associated with a Tashi Vertex pointer.
 impl<T> Drop for Pointer<T> {
     fn drop(&mut self) {

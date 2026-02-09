@@ -2,6 +2,8 @@ use std::fmt::{self, Debug, Display};
 use std::mem::MaybeUninit;
 use std::str::FromStr;
 
+use serde::{Deserialize, Serialize};
+
 use crate::error::TVResult;
 use crate::{KeyPublic, base58};
 
@@ -9,12 +11,18 @@ const KEY_SECRET_DER_LENGTH: usize = 51;
 const KEY_SECRET_DER_BASE58_LENGTH: usize = base58::encode_length(KEY_SECRET_DER_LENGTH);
 
 /// A secret key used for signing transactions in Tashi Vertex.
+#[derive(Clone)]
 #[repr(C)]
 pub struct KeySecret {
     material: [u8; 32],
 }
 
 impl KeySecret {
+    /// Returns the raw bytes of the secret key.
+    pub fn as_bytes(&self) -> &[u8; 32] {
+        &self.material
+    }
+
     /// Generates a new secret key.
     ///
     /// This function populates the provided TVKeySecret structure with a newly
@@ -104,6 +112,25 @@ impl FromStr for KeySecret {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         base58::with_decoded::<KEY_SECRET_DER_LENGTH, _>(s.as_bytes(), KeySecret::from_der)?
+    }
+}
+
+impl Serialize for KeySecret {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.collect_str(self)
+    }
+}
+
+impl<'de> Deserialize<'de> for KeySecret {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Self::from_str(&s).map_err(serde::de::Error::custom)
     }
 }
 
