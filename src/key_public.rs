@@ -12,7 +12,7 @@ const KEY_PUBLIC_DER_LENGTH: usize = 91;
 const KEY_PUBLIC_DER_BASE58_LENGTH: usize = base58::encode_length(KEY_PUBLIC_DER_LENGTH);
 
 /// A public key used for verifying signatures in Tashi Vertex.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub struct KeyPublic {
     material: [u8; 72],
