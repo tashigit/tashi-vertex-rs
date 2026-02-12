@@ -120,6 +120,52 @@ The [`examples/`](./examples) directory contains runnable demos:
 cargo run --example key-generate
 ```
 
+### Running the Pingback Example
+
+The `pingback` example runs a 3-node consensus network where each node sends a `PING` transaction. First, generate a keypair for each node:
+
+```sh
+cargo run --example key-generate  # run 3 times, save each secret/public key
+```
+
+Then start each node in a separate terminal, passing the other two nodes as peers:
+
+```sh
+cargo run --example pingback -- \
+  -B 127.0.0.1:8001 \
+  -K <secret_key> \
+  -P <peer2_public_key>@127.0.0.1:8002 \
+  -P <peer3_public_key>@127.0.0.1:8003
+```
+
+Once all three nodes are running, each will reach consensus and print the ordered events:
+
+```
+ :: Configured network for 3 peers
+ :: Initialized runtime
+ :: Bound local socket
+ :: Started the consensus engine
+ > Received SYNC POINT
+ > Received EVENT
+    - From: aSq9DsNNvGhY...
+    - Created: 1770174202473826258
+    - Consensus: 1770174208954261963
+    - Transactions: 1
+    - >> PING
+ > Received EVENT
+    - From: aSq9DsNNvGhY...
+    - Created: 1770174208954261966
+    - Consensus: 1770174208954261964
+    - Transactions: 1
+    - >> PING
+ > Received EVENT
+    - From: aSq9DsNNvGhY...
+    - Created: 1770174216230094057
+    - Consensus: 1770174208954261965
+    - Transactions: 1
+    - >> PING
+```
+
 ## License
 
 This project is licensed under the **Apache License, Version 2.0** ([`LICENSE`](./LICENSE)).
