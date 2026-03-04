@@ -21,7 +21,7 @@ pub use key_public::KeyPublic;
 pub use key_secret::KeySecret;
 pub use message::Message;
 pub use options::Options;
-pub use peers::Peers;
+pub use peers::{Peers, PeerCapabilities};
 pub use socket::Socket;
 pub use sync_point::SyncPoint;
 pub use transaction::Transaction;

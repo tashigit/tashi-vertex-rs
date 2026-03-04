@@ -4,13 +4,15 @@ use std::{
     str::FromStr,
 };
 
+use serde::{Deserialize, Serialize};
+
 use crate::{base58, error::TVResult};
 
 const KEY_PUBLIC_DER_LENGTH: usize = 91;
 const KEY_PUBLIC_DER_BASE58_LENGTH: usize = base58::encode_length(KEY_PUBLIC_DER_LENGTH);
 
 /// A public key used for verifying signatures in Tashi Vertex.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub struct KeyPublic {
     material: [u8; 72],
@@ -77,6 +79,25 @@ impl FromStr for KeyPublic {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         base58::with_decoded::<KEY_PUBLIC_DER_LENGTH, _>(s.as_bytes(), KeyPublic::from_der)?
+    }
+}
+
+impl Serialize for KeyPublic {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.collect_str(self)
+    }
+}
+
+impl<'de> Deserialize<'de> for KeyPublic {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Self::from_str(&s).map_err(serde::de::Error::custom)
     }
 }
 
