@@ -16,7 +16,7 @@ fn main() -> anyhow::Result<()> {
 
     // Copy libraries to the target output directory
     let profile = env::var("PROFILE")?;
-    copy_to_output_path(&vertex, &profile)?;
+    let _ = copy_to_output_path(&vertex, &profile);
 
     Ok(())
 }
