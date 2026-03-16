@@ -6,7 +6,7 @@ description = "Rust bindings for Tashi Vertex, an embedded BFT consensus engine 
 license = "Apache-2.0"
 repository = "https://github.com/tashigg/tashi-vertex-rs"
 readme = "README.md"
-keywords = ["consensus", "bft", "hashgraph", "distributed-systems", "tashi", "tashi-vertex", "vertex"]
+keywords = ["consensus", "bft", "hashgraph", "tashi-vertex", "vertex"]
 categories = ["cryptography", "network-programming"]
 
 [dependencies]
