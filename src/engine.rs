@@ -23,6 +23,7 @@ impl Engine {
         options: Options,
         secret: &KeySecret,
         peers: Peers,
+        joining_running_session: bool,
     ) -> crate::Result<Self> {
         let mut socket_ptr = socket.handle.as_ptr();
         let mut options_ptr = options.handle.as_ptr();
@@ -43,6 +44,7 @@ impl Engine {
                 secret,
                 &mut peers_ptr,
                 handle.as_mut_ptr(),
+                joining_running_session
             )
         }
         .ok()?;
@@ -73,5 +75,6 @@ unsafe extern "C" {
         secret: *const KeySecret,
         peers: *mut *mut TVPeers,
         engine: *mut Pointer<TVEngine>,
+        joining_running_session: bool
     ) -> TVResult;
 }

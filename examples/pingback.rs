@@ -75,7 +75,7 @@ async fn main() -> anyhow::Result<()> {
 
     // start the engine
     // and begin participating in the network
-    let engine = Engine::start(&context, socket, options, &key, peers)?;
+    let engine = Engine::start(&context, socket, options, &key, peers, false)?;
 
     println!(" :: Started the consensus engine");
 
