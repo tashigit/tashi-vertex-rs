@@ -4,7 +4,7 @@ project(tashi_vertex_rs)
 include(FetchContent)
 
 # Set the GitHub archive URL and version
-set(TASHI_VERTEX_VERSION "0.12.0")
+set(TASHI_VERTEX_VERSION "0.13.0")
 set(TASHI_VERTEX_URL "https://github.com/tashigg/tashi-vertex-c/releases/download/v${TASHI_VERTEX_VERSION}/tashi-vertex-${TASHI_VERTEX_VERSION}.zip")
 
 # Download and extract the pre-built library

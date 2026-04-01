@@ -64,10 +64,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize the runtime and bind a socket
     let context = Context::new()?;
     let socket = Socket::bind(&context, "127.0.0.1:9000").await?;
+    let joining_running_session = false; // new session
 
     // Start the consensus engine
     let options = Options::default();
-    let engine = Engine::start(&context, socket, options, &key, peers)?;
+    let engine = Engine::start(&context, socket, options, &key, peers, joining_running_session)?;
 
     // Send a transaction
     let data = b"hello world";
