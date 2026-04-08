@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 3.23)
 project(tashi_vertex_rs)
 
 include(FetchContent)
@@ -41,6 +41,12 @@ else()
 endif()
 
 # Install the library
-install(FILES ${TASHI_VERTEX_LIB_FILE}
-    DESTINATION lib
-)
+if(WIN32)
+    install(FILES ${TASHI_VERTEX_LIB_FILE} "${TASHI_VERTEX_LIB_DIR}/tashi-vertex.lib"
+        DESTINATION lib
+    )
+else()
+    install(FILES ${TASHI_VERTEX_LIB_FILE}
+        DESTINATION lib
+    )
+endif()
