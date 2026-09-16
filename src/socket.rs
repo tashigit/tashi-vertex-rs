@@ -1,6 +1,7 @@
 use std::ffi::{CString, c_char};
 use std::os::raw::c_void;
 use std::pin::Pin;
+use std::sync::{Arc, Mutex};
 use std::task;
 
 use crate::Context;
@@ -27,18 +28,27 @@ impl Socket {
             context,
             address,
             invoked: false,
-            waker: None,
-            result: None,
+            shared: Arc::new(Mutex::new(SharedBindState {
+                waker: None,
+                result: None,
+            })),
         }
     }
+}
+
+/// State shared between the Future and the C callback via Arc.
+/// Ensures the callback always writes to valid memory even if the
+/// Future is dropped (e.g. by tokio::select! or timeout).
+struct SharedBindState {
+    waker: Option<task::Waker>,
+    result: Option<crate::Result<Socket>>,
 }
 
 struct SocketBind<'a> {
     context: &'a Context,
     address: CString,
     invoked: bool,
-    waker: Option<task::Waker>,
-    result: Option<crate::Result<Socket>>,
+    shared: Arc<Mutex<SharedBindState>>,
 }
 
 impl Future for SocketBind<'_> {
@@ -50,36 +60,45 @@ impl Future for SocketBind<'_> {
             socket: Pointer<TVSocket>,
             user_data: *mut c_void,
         ) {
-            let user_data = unsafe { &mut *(user_data as *mut SocketBind) };
+            let shared = unsafe { Arc::from_raw(user_data as *const Mutex<SharedBindState>) };
 
-            user_data.result = Some(result.ok_with(socket).map(|handle| Socket { handle }));
+            let bind_result = result.ok_with(socket).map(|handle| Socket { handle });
 
-            if let Some(waker) = user_data.waker.take() {
+            let mut state = shared.lock().unwrap();
+            state.result = Some(bind_result);
+            if let Some(waker) = state.waker.take() {
                 waker.wake();
             }
         }
 
         if !self.invoked {
-            // this is the first time poll is called
-            // invoke the bind operation
-
-            self.waker = Some(cx.waker().clone());
+            {
+                let mut state = self.shared.lock().unwrap();
+                state.waker = Some(cx.waker().clone());
+            }
             self.invoked = true;
+
+            let shared_ptr = Arc::into_raw(Arc::clone(&self.shared));
 
             let res = unsafe {
                 tv_socket_bind(
                     self.context.handle.as_ptr(),
                     self.address.as_ptr(),
                     callback,
-                    self.get_mut() as *mut _ as *mut c_void,
+                    shared_ptr as *mut c_void,
                 )
             };
 
             if let Err(error) = res.ok() {
+                unsafe { Arc::from_raw(shared_ptr) };
                 return task::Poll::Ready(Err(error));
             }
-        } else if let Some(result) = self.result.take() {
-            return task::Poll::Ready(result);
+        } else {
+            let mut state = self.shared.lock().unwrap();
+            if let Some(result) = state.result.take() {
+                return task::Poll::Ready(result);
+            }
+            state.waker = Some(cx.waker().clone());
         }
 
         task::Poll::Pending
