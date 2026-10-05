@@ -131,6 +131,17 @@ impl Engine {
 
         res.ok()
     }
+
+    /// Gracefully stops the engine.
+    ///
+    /// Once the engine has wound down, in-flight and subsequent calls to
+    /// [`Engine::recv_message`] return `None`, so a consumer blocked on receive
+    /// observes the stop even when no further consensus messages are flowing
+    /// (e.g. the session has lost quorum). Non-blocking and idempotent; safe to
+    /// call from the thread driving the engine.
+    pub fn stop(&self) -> crate::Result<()> {
+        unsafe { tv_engine_stop(self.handle.as_ptr()) }.ok()
+    }
 }
 
 pub(crate) type TVEngine = c_void;
@@ -160,4 +171,6 @@ unsafe extern "C" {
         capabilities: u8,
         timeout_secs: u64,
     ) -> TVResult;
+
+    fn tv_engine_stop(engine: *const TVEngine) -> TVResult;
 }

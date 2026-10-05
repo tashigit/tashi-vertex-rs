@@ -3,7 +3,7 @@ project(tashi_vertex_rs)
 
 include(FetchContent)
 
-set(TASHI_VERTEX_VERSION "0.15.0")
+set(TASHI_VERTEX_VERSION "0.16.0-rc1")
 set(TASHI_VERTEX_URL "https://github.com/tashigit/tashi-vertex-c/releases/download/v${TASHI_VERTEX_VERSION}/tashi-vertex-${TASHI_VERTEX_VERSION}.zip")
 
 # Local-build switch. Enable via `-DTASHI_VERTEX_LOCAL_BUILD=ON` or by exporting
