@@ -15,7 +15,9 @@ fn main() -> anyhow::Result<()> {
     // Declare a dynamic link dependency on the tashi_vertex library
     println!("cargo:rustc-link-lib=dylib=tashi-vertex");
 
-    
+    // Exposed to dependents as DEP_TASHI_VERTEX_LIB_DIR (Cargo.toml `links`).
+    println!("cargo:lib_dir={}", vertex.display());
+
     if env::var("CARGO_CFG_TARGET_OS")? == "macos" {
         let dylib_path = vertex.join("libtashi-vertex.dylib");
         if dylib_path.exists() {
@@ -31,6 +33,13 @@ fn main() -> anyhow::Result<()> {
         // @loader_path refers to the directory containing the binary.
         println!("cargo:rustc-link-arg=-Wl,-rpath,@loader_path/../lib"); // for examples
         println!("cargo:rustc-link-arg=-Wl,-rpath,@loader_path/../../lib"); // for tests in deps/
+    }
+
+    if env::var("CARGO_CFG_TARGET_OS")? == "linux" {
+        // Same as macOS: examples and tests find libtashi-vertex.so next to the binary
+        // (copy_to_output lands it in target/<profile>/lib) without LD_LIBRARY_PATH.
+        println!("cargo:rustc-link-arg=-Wl,-rpath,$ORIGIN/../lib"); // for examples
+        println!("cargo:rustc-link-arg=-Wl,-rpath,$ORIGIN/../../lib"); // for tests in deps/
     }
 
     // Copy libraries to the target output directory

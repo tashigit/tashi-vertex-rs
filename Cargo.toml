@@ -1,7 +1,10 @@
 [package]
 name = "tashi-vertex"
-version = "0.15.0"
+version = "0.16.0-rc1"
 edition = "2024"
+# Dependents' build scripts get DEP_TASHI_VERTEX_LIB_DIR (the libtashi-vertex directory)
+# so they can ship the library next to their own binaries.
+links = "tashi-vertex"
 description = "Rust bindings for Tashi Vertex, an embedded BFT consensus engine based on Hashgraph."
 license = "Apache-2.0"
 repository = "https://github.com/tashigit/tashi-vertex-rs"
