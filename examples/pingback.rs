@@ -64,7 +64,7 @@ async fn main() -> anyhow::Result<()> {
     println!(" :: Initialized runtime");
 
     // bind a new socket to listen for incoming connections in the network
-    let socket = Socket::bind(&context, &args.bind).await?;
+    let socket = Socket::bind(&context, &args.bind)?.await?;
 
     println!(" :: Bound local socket");
 
