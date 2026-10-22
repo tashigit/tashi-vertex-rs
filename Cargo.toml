@@ -1,6 +1,6 @@
 [package]
 name = "tashi-vertex"
-version = "0.16.0-rc1"
+version = "0.16.0-rc2"
 edition = "2024"
 # Dependents' build scripts get DEP_TASHI_VERTEX_LIB_DIR (the libtashi-vertex directory)
 # so they can ship the library next to their own binaries.
