@@ -14,7 +14,7 @@ mod sync_point;
 mod transaction;
 
 pub use context::Context;
-pub use engine::Engine;
+pub use engine::{Engine, StateResult};
 pub use error::{Error, Result};
 pub use event::Event;
 pub use key_public::KeyPublic;
