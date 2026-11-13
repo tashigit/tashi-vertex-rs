@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/tashi-vertex)](https://crates.io/crates/tashi-vertex)
 [![docs.rs](https://img.shields.io/docsrs/tashi-vertex)](https://docs.rs/tashi-vertex)
-[![License](https://img.shields.io/crates/l/tashi-vertex)](./LICENSE)
+[![License](https://img.shields.io/badge/license-BUSL--1.1-blue)](./LICENSE)
 
 Rust bindings for **Tashi Vertex**, an embedded Byzantine fault-tolerant consensus engine based on the [Hashgraph] algorithm.
 
@@ -242,10 +242,12 @@ Once all three nodes are running, each will reach consensus and print the ordere
 
 ## License
 
-This project is licensed under the **Apache License, Version 2.0** ([`LICENSE`](./LICENSE)).
+This project is licensed under the **Business Source License 1.1** ([`LICENSE`](./LICENSE)). You can use, modify and redistribute the source for non-production purposes such as development, testing and evaluation. Production use requires a commercial license from Tashi Network (https://tashi.network). Each version converts to the Apache License, Version 2.0 four years after it is published.
+
+Versions up to and including 0.16.0-rc2 were released under the Apache License, Version 2.0, and stay available under that license.
 
 ### Dynamic Linking to Tashi Vertex
 
 This project dynamically links to the **Tashi Vertex** binary library (proprietary). Its origin and licensing details are provided in the [`NOTICE`](./NOTICE) file.
 
-**Disclaimer:** The Apache 2.0 license applies only to the source code of this project. The Tashi Vertex binary is not part of this open-source distribution and is governed by its own commercial license.
+**Disclaimer:** The Business Source License applies only to the source code of this project. The Tashi Vertex binary is not part of this source distribution and is governed by its own commercial license.
