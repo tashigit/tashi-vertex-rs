@@ -592,3 +592,117 @@ unsafe extern "C" {
         enabled: *mut bool,
     ) -> TVResult;
 }
+
+/// Options for narrow links (radio meshes). Every one defaults to the engine's previous
+/// behaviour; set them when nodes share a link of a few hundred kbit/s and outages last
+/// minutes rather than seconds.
+impl Options {
+    /// Most bytes of application transactions one event may carry, `None` for no cap (default).
+    ///
+    /// Keeps a node that comes back from an outage from putting its whole queued backlog into one
+    /// event that cannot reach its peers within an epoch. A few kilobytes suits a radio link.
+    pub fn set_max_event_transaction_bytes(&mut self, bytes: Option<u64>) {
+        let bytes = bytes.map_or(-1, |b| b.min(i64::MAX as u64) as i64);
+        unsafe { tv_options_set_max_event_transaction_bytes(self.handle.as_ptr(), bytes) }
+            .assert_ok();
+    }
+
+    /// Event interval in milliseconds while a quorum is out of reach, `None` to never slow
+    /// (default). Keeps both sides of a partition from piling up events that all have to cross
+    /// the link at heal.
+    pub fn set_no_quorum_event_interval_ms(&mut self, millis: Option<u64>) {
+        let millis = millis.map_or(-1, |m| m.min(i64::MAX as u64) as i64);
+        unsafe { tv_options_set_no_quorum_event_interval_ms(self.handle.as_ptr(), millis) }
+            .assert_ok();
+    }
+
+    /// How long in milliseconds a creator must send nothing new before its events are relayed to
+    /// every peer that asks, `None` to keep the relay limit for every source (default).
+    pub fn set_quiet_source_relay_ms(&mut self, millis: Option<u64>) {
+        let millis = millis.map_or(-1, |m| m.min(i64::MAX as u64) as i64);
+        unsafe { tv_options_set_quiet_source_relay_ms(self.handle.as_ptr(), millis) }.assert_ok();
+    }
+
+    /// How old in milliseconds an application transaction may get while no quorum is in reach
+    /// before it is dropped, `None` to keep every transaction (default). Applies to every
+    /// transaction of the node: leave it unset if the application sends commands that must not
+    /// expire.
+    pub fn set_no_quorum_transaction_ttl_ms(&mut self, millis: Option<u64>) {
+        let millis = millis.map_or(-1, |m| m.min(i64::MAX as u64) as i64);
+        unsafe { tv_options_set_no_quorum_transaction_ttl_ms(self.handle.as_ptr(), millis) }
+            .assert_ok();
+    }
+
+    /// Longest wait in milliseconds between dials to an unreachable peer. Defaults to 30000.
+    pub fn set_max_connect_backoff_ms(&mut self, millis: u64) {
+        unsafe { tv_options_set_max_connect_backoff_ms(self.handle.as_ptr(), millis) }.assert_ok();
+    }
+
+    /// The per-event cap on application transaction bytes, if any.
+    pub fn get_max_event_transaction_bytes(&self) -> Option<u64> {
+        let mut out = -1i64;
+        unsafe { tv_options_get_max_event_transaction_bytes(self.handle.as_ptr(), &mut out) }
+            .assert_ok();
+        (out >= 0).then_some(out as u64)
+    }
+
+    /// The no-quorum event interval in milliseconds, if any.
+    pub fn get_no_quorum_event_interval_ms(&self) -> Option<u64> {
+        let mut out = -1i64;
+        unsafe { tv_options_get_no_quorum_event_interval_ms(self.handle.as_ptr(), &mut out) }
+            .assert_ok();
+        (out >= 0).then_some(out as u64)
+    }
+
+    /// The quiet-source relay delay in milliseconds, if any.
+    pub fn get_quiet_source_relay_ms(&self) -> Option<u64> {
+        let mut out = -1i64;
+        unsafe { tv_options_get_quiet_source_relay_ms(self.handle.as_ptr(), &mut out) }
+            .assert_ok();
+        (out >= 0).then_some(out as u64)
+    }
+
+    /// The no-quorum transaction lifetime in milliseconds, if any.
+    pub fn get_no_quorum_transaction_ttl_ms(&self) -> Option<u64> {
+        let mut out = -1i64;
+        unsafe { tv_options_get_no_quorum_transaction_ttl_ms(self.handle.as_ptr(), &mut out) }
+            .assert_ok();
+        (out >= 0).then_some(out as u64)
+    }
+
+    /// The longest wait in milliseconds between dials to an unreachable peer.
+    pub fn get_max_connect_backoff_ms(&self) -> u64 {
+        let mut out = 0u64;
+        unsafe { tv_options_get_max_connect_backoff_ms(self.handle.as_ptr(), &mut out) }
+            .assert_ok();
+        out
+    }
+}
+
+unsafe extern "C" {
+    fn tv_options_set_max_event_transaction_bytes(options: *mut TVOptions, bytes: i64) -> TVResult;
+    fn tv_options_get_max_event_transaction_bytes(
+        options: *const TVOptions,
+        bytes: *mut i64,
+    ) -> TVResult;
+    fn tv_options_set_no_quorum_event_interval_ms(options: *mut TVOptions, millis: i64)
+    -> TVResult;
+    fn tv_options_get_no_quorum_event_interval_ms(
+        options: *const TVOptions,
+        millis: *mut i64,
+    ) -> TVResult;
+    fn tv_options_set_quiet_source_relay_ms(options: *mut TVOptions, millis: i64) -> TVResult;
+    fn tv_options_get_quiet_source_relay_ms(options: *const TVOptions, millis: *mut i64)
+    -> TVResult;
+    fn tv_options_set_no_quorum_transaction_ttl_ms(
+        options: *mut TVOptions,
+        millis: i64,
+    ) -> TVResult;
+    fn tv_options_get_no_quorum_transaction_ttl_ms(
+        options: *const TVOptions,
+        millis: *mut i64,
+    ) -> TVResult;
+    fn tv_options_set_max_connect_backoff_ms(options: *mut TVOptions, millis: u64) -> TVResult;
+    fn tv_options_get_max_connect_backoff_ms(options: *const TVOptions, millis: *mut u64)
+    -> TVResult;
+}
