@@ -47,7 +47,7 @@ impl Engine {
                 secret,
                 &mut peers_ptr,
                 handle.as_mut_ptr(),
-                joining_running_session
+                joining_running_session,
             )
         }
         .ok()?;
@@ -154,7 +154,7 @@ unsafe extern "C" {
         secret: *const KeySecret,
         peers: *mut *mut TVPeers,
         engine: *mut Pointer<TVEngine>,
-        joining_running_session: bool
+        joining_running_session: bool,
     ) -> TVResult;
 
     fn tv_engine_get_active_creators(
@@ -173,4 +173,116 @@ unsafe extern "C" {
     ) -> TVResult;
 
     fn tv_engine_stop(engine: *const TVEngine) -> TVResult;
+}
+
+/// Application state sharing (engine `tv_engine_report_state` / `tv_engine_request_state`).
+///
+/// Both need [`Options::set_enable_state_sharing`](crate::Options::set_enable_state_sharing)
+/// set to `true` before the engine starts.
+impl Engine {
+    /// Report this node's application state for the epoch a sync point began
+    /// ([`SyncPoint::epoch_index`](crate::SyncPoint::epoch_index)).
+    ///
+    /// The engine signs the hash of `state` as this node's proof for the epoch; once a
+    /// supermajority of active creators reported the same hash, a node that missed epochs can
+    /// fetch that state with [`Engine::request_state`]. `state` must be derived deterministically
+    /// from the finalized order, so that honest nodes report identical bytes.
+    ///
+    /// With [`Options::set_wait_for_state_report`](crate::Options::set_wait_for_state_report) the
+    /// engine waits for this call at every epoch boundary; without it the engine also signs an
+    /// empty state for the epoch.
+    pub fn report_state(&self, epoch_index: u64, state: &[u8]) -> crate::Result<()> {
+        unsafe {
+            tv_engine_report_state(
+                self.handle.as_ptr(),
+                epoch_index,
+                state.as_ptr(),
+                state.len(),
+            )
+        }
+        .ok()
+    }
+
+    /// Request the application state agreed for `epoch_index`.
+    ///
+    /// The result arrives exactly once on the returned channel, after the engine checked the
+    /// downloaded state against the hash a supermajority signed. Poll it with `try_recv` next to
+    /// `recv_message` (which must never be cancelled).
+    pub fn request_state(
+        &self,
+        epoch_index: u64,
+    ) -> crate::Result<std::sync::mpsc::Receiver<StateResult>> {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let user_data = Box::into_raw(Box::new(tx)) as *const c_void;
+        let res = unsafe {
+            tv_engine_request_state(self.handle.as_ptr(), epoch_index, state_callback, user_data)
+        };
+        if let Err(e) = res.ok() {
+            // The callback will never run: reclaim the sender.
+            drop(unsafe { Box::from_raw(user_data as *mut std::sync::mpsc::Sender<StateResult>) });
+            return Err(e);
+        }
+        Ok(rx)
+    }
+}
+
+/// Outcome of [`Engine::request_state`].
+#[derive(Debug)]
+pub enum StateResult {
+    /// The agreed state, checked against the supermajority-signed hash.
+    Ready(Vec<u8>),
+    /// This node's own report for the epoch already matches the agreed state; nothing was
+    /// downloaded.
+    Converged,
+    /// No state for the epoch was agreed and downloaded in time.
+    TimedOut,
+    /// The request was cancelled, for instance because the engine shut down.
+    Cancelled,
+    /// The request failed, for instance because state sharing is not enabled. Carries the
+    /// engine's error when it reported one.
+    Failed(Option<crate::Error>),
+}
+
+const TV_STATE_READY: u8 = 0;
+const TV_STATE_CONVERGED: u8 = 1;
+const TV_STATE_TIMED_OUT: u8 = 2;
+const TV_STATE_CANCELLED: u8 = 3;
+const TV_STATE_ERROR: u8 = 4;
+
+extern "C" fn state_callback(
+    res: TVResult,
+    status: u8,
+    data: *const u8,
+    len: usize,
+    user_data: *const c_void,
+) {
+    let tx = unsafe { Box::from_raw(user_data as *mut std::sync::mpsc::Sender<StateResult>) };
+    let result = match status {
+        TV_STATE_READY if len == 0 => StateResult::Ready(Vec::new()),
+        TV_STATE_READY if !data.is_null() => {
+            StateResult::Ready(unsafe { std::slice::from_raw_parts(data, len) }.to_vec())
+        }
+        TV_STATE_CONVERGED => StateResult::Converged,
+        TV_STATE_TIMED_OUT => StateResult::TimedOut,
+        TV_STATE_CANCELLED => StateResult::Cancelled,
+        TV_STATE_ERROR => StateResult::Failed(res.ok().err()),
+        _ => StateResult::Failed(res.ok().err()),
+    };
+    let _ = tx.send(result);
+}
+
+unsafe extern "C" {
+    fn tv_engine_report_state(
+        engine: *const TVEngine,
+        epoch_index: u64,
+        data: *const u8,
+        len: usize,
+    ) -> TVResult;
+
+    fn tv_engine_request_state(
+        engine: *const TVEngine,
+        epoch_index: u64,
+        callback: extern "C" fn(TVResult, u8, *const u8, usize, *const c_void),
+        user_data: *const c_void,
+    ) -> TVResult;
 }
