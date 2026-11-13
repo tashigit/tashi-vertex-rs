@@ -6,7 +6,7 @@ edition = "2024"
 # so they can ship the library next to their own binaries.
 links = "tashi-vertex"
 description = "Rust bindings for Tashi Vertex, an embedded BFT consensus engine based on Hashgraph."
-license = "Apache-2.0"
+license = "BUSL-1.1"
 repository = "https://github.com/tashigit/tashi-vertex-rs"
 readme = "README.md"
 keywords = ["consensus", "bft", "hashgraph", "tashi-vertex", "vertex"]

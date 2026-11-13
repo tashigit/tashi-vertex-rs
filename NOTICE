@@ -1,7 +1,10 @@
-Copyright 2022-2025 Tashi Network PTE. LTD.
+Copyright 2022-2026 Tashi Network PTE. LTD.
 
-This project, Tashi Vertex for C, is licensed under the Apache
-License, Version 2.0.
+This project, Tashi Vertex for Rust, is licensed under the Business Source
+License 1.1. See the LICENSE file for the license parameters.
+
+Versions up to and including 0.16.0-rc2 were released under the Apache
+License, Version 2.0, and remain available under that license.
 
 ***
 
