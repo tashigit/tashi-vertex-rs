@@ -598,6 +598,7 @@ unsafe extern "C" {
 /// minutes rather than seconds.
 impl Options {
     /// Most bytes of application transactions one event may carry, `None` for no cap (default).
+    /// `Some(0)` also disables the cap.
     ///
     /// Keeps a node that comes back from an outage from putting its whole queued backlog into one
     /// event that cannot reach its peers within an epoch. A few kilobytes suits a radio link.
@@ -608,7 +609,7 @@ impl Options {
     }
 
     /// Event interval in milliseconds while a quorum is out of reach, `None` to never slow
-    /// (default). Keeps both sides of a partition from piling up events that all have to cross
+    /// (default; `Some(0)` also never slows). Keeps both sides of a partition from piling up events that all have to cross
     /// the link at heal.
     pub fn set_no_quorum_event_interval_ms(&mut self, millis: Option<u64>) {
         let millis = millis.map_or(-1, |m| m.min(i64::MAX as u64) as i64);
@@ -624,7 +625,8 @@ impl Options {
     }
 
     /// How old in milliseconds an application transaction may get while no quorum is in reach
-    /// before it is dropped, `None` to keep every transaction (default). Applies to every
+    /// before it is dropped, `None` to keep every transaction (default; `Some(0)` also keeps
+    /// them). Applies to every
     /// transaction of the node: leave it unset if the application sends commands that must not
     /// expire.
     pub fn set_no_quorum_transaction_ttl_ms(&mut self, millis: Option<u64>) {
