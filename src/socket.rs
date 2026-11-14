@@ -3,7 +3,7 @@ use std::os::raw::c_void;
 use std::pin::Pin;
 use std::task;
 
-use crate::Context;
+use crate::{Context, Error};
 use crate::context::TVContext;
 use crate::error::TVResult;
 use crate::ptr::Pointer;
@@ -20,16 +20,16 @@ impl Socket {
     /// Note that the address must be a valid IPv4 or IPv6 address, including the port number.
     /// A DNS lookup is not performed.
     ///
-    pub fn bind(context: &Context, address: &str) -> impl Future<Output = crate::Result<Self>> {
-        let address = CString::new(address).unwrap();
+    pub fn bind<'a>(context: &'a Context, address: &str) -> crate::Result<impl Future<Output = crate::Result<Self>> + 'a> {
+        let address = CString::new(address).map_err(|_| Error::Argument)?;
 
-        SocketBind {
+        Ok(SocketBind {
             context,
             address,
             invoked: false,
             waker: None,
             result: None,
-        }
+        })
     }
 }
 
